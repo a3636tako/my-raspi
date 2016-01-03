@@ -4,11 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 
+import models.Album;
 import models.Audio;
 import play.db.jpa.Transactional;
 import play.mvc.Controller;
@@ -59,21 +64,36 @@ public class AudioFileManager extends Controller {
 
 		File f = a.get(0).createFile(ext);
 		if (!f.exists()) {
-			throw new RuntimeException(f.getAbsolutePath());
-			//return notFound();
+			// throw new RuntimeException(f.getAbsolutePath());
+			return notFound();
 		}
 		return ok(f);
 	}
 
 	@Transactional
 	public Result upload() {
+		File file = request().body().asRaw().asFile();
+		File nf = new File(file.getAbsolutePath() + ".mp3");
+		file.renameTo(nf);
+		try {
+			storeFile(nf);
+		} catch (CannotReadException | IOException | TagException | ReadOnlyFileException
+				| InvalidAudioFrameException e) {
+			e.printStackTrace();
+			return badRequest();
+		}
+		return ok();
+	}
+
+	@Transactional
+	public Result uploadForm() {
 		play.mvc.Http.MultipartFormData body = request().body().asMultipartFormData();
 		play.mvc.Http.MultipartFormData.FilePart music = body.getFile("music");
 		if (music != null) {
 			try {
 				File nf = new File("./tmp", music.getFilename());
 				music.getFile().renameTo(nf);
-				storeFile(nf, music.getFilename());
+				storeFile(nf);
 				return ok("File uploaded");
 			} catch (CannotReadException | IOException | TagException | ReadOnlyFileException
 					| InvalidAudioFrameException e) {
@@ -86,36 +106,42 @@ public class AudioFileManager extends Controller {
 		}
 	}
 
-	private void storeFile(File file, String fileName)
+	private void storeFile(File file)
 			throws CannotReadException, IOException, TagException, ReadOnlyFileException, InvalidAudioFrameException {
-		/*
-		 * AudioFile af = AudioFileIO.read(file); Tag tag = af.getTag();
-		 * 
-		 * 
-		 * Audio audio = new Audio(); audio.title =
-		 * tag.getFirst(FieldKey.TITLE); audio.trackNumber =
-		 * Integer.valueOf(tag.getFirst(FieldKey.TRACK));
-		 * 
-		 * String albumTitle = tag.getFirst(FieldKey.ALBUM); String artist =
-		 * tag.getFirst(FieldKey.ALBUM_ARTIST);
-		 * 
-		 * 
-		 * 
-		 * TypedQuery<Album> query = JPA.em().createQuery(
-		 * "SELECT a FROM Album a WHERE a.title='" + albumTitle +
-		 * "' and a.artist='" + artist + "'", Album.class);
-		 * 
-		 * List<Album> albumList = query.getResultList(); if(albumList.size() ==
-		 * 0){ audio.album = new Album(); audio.album.artist = artist;
-		 * audio.album.title = albumTitle; }else{ audio.album =
-		 * albumList.get(0); TypedQuery<Audio> query2 = JPA.em().createQuery(
-		 * "SELECT a FROM Audio a WHERE a.album='" + audio.album.id +
-		 * "' and a.trackNumber=" + audio.trackNumber , Audio.class);
-		 * List<Audio> rlist = query2.getResultList(); if(rlist.size() != 0){
-		 * Audio nAudio = rlist.get(0); nAudio.title = audio.title;
-		 * JPA.em().merge(nAudio); return; } }
-		 * 
-		 * JPA.em().persist(audio);
-		 */
+
+		AudioFile af = AudioFileIO.read(file);
+		Tag tag = af.getTag();
+
+		String title = tag.getFirst(FieldKey.TITLE);
+		Integer trackNumber = Integer.valueOf(tag.getFirst(FieldKey.TRACK));
+
+		String albumTitle = tag.getFirst(FieldKey.ALBUM);
+		String artist = tag.getFirst(FieldKey.ALBUM_ARTIST);
+		Integer year = Integer.valueOf(tag.getFirst(FieldKey.YEAR));
+
+		List<Audio> audioList = Audio.find(artist, albumTitle, title);
+
+		Audio audio;
+		if (audioList.size() > 0) {
+			audio = audioList.get(0);
+		} else {
+			audio = new Audio();
+		}
+
+		audio.title = title;
+		audio.trackNumber = trackNumber;
+
+		List<Album> albumList = Album.find(artist, albumTitle, null);
+		if (albumList.size() > 0) {
+			audio.album = albumList.get(0);
+		} else {
+			audio.album = new Album();
+			audio.album.artist = artist;
+			audio.album.artwork_format = "mp3";
+			audio.album.audios.add(audio);
+			audio.album.title = albumTitle;
+			audio.album.year = year;
+		}
+		audio.save();
 	}
 }
