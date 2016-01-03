@@ -18,6 +18,7 @@ LAN内のサーバ上で音楽ファイルを管理します。
 
 #### クエリの例
 アーティスト名が"abc"で、アルバム名が"def"である音楽ファイルのリストを取得する場合
+
 GET http://server-address/list?artist=abc&album=def
  
 #### レスポンス
@@ -79,6 +80,7 @@ GET http://server-address/list?artist=abc&album=def
 
 #### URL
 GET http://server-address/audio/[audio_id].mp3
+
 GET http://server-address/audio/[artist]/[album]/[title].mp3	
 
 #### パラメータ
@@ -89,9 +91,11 @@ GET http://server-address/audio/[artist]/[album]/[title].mp3
 
 #### クエリの例
 オーディオIDが"3"の曲を取得する場合
+
  http://server-address/audio/3.mp3
  
 アーティスト"abc"、アルバム名"def"、曲名"ghi"の曲を取得する場合
+
  http://server-address/audio/abc/def/ghi.mp3
  
 #### レスポンス
