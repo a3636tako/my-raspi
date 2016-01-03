@@ -1,0 +1,70 @@
+- &testAudio1 !!models.Audio
+    #id:          0
+    title:       testAudio1
+    trackNumber: 1
+    #album:       *testAlbum1
+    
+- &testAudio2 !!models.Audio
+    #id:          1
+    title:       testAudio2
+    trackNumber: 2
+    #album:       *testAlbum1 
+
+- &testAudio3 !!models.Audio
+    #id:          2
+    title:       testAudio3
+    trackNumber: 1
+    #album:       *testAlbum2   
+
+
+- &testAudio4 !!models.Audio
+    #id:          3
+    title:       testAudio4
+    trackNumber: 1
+    #album:       *testAlbum3
+    
+
+- &testAudio5 !!models.Audio
+    #id:          4
+    title:       testAudio5
+    trackNumber: 2
+    #album:       *testAlbum3
+    
+- &testAudio6 !!models.Audio
+    #id:          5
+    title:       testAudio6
+    trackNumber: 3
+    #album:       *testAlbum3
+    
+- &testAlbum1 !!models.Album
+    #id:       0
+    artist:   testArtist1
+    title:    testAlbum1
+    year:     2016
+    artwork_format: jpg
+    audios:
+       - *testAudio1
+       - *testAudio2
+
+- &testAlbum2 !!models.Album
+    #id:       1
+    artist:   testArtist1
+    title:    testAlbum2
+    year:     2016
+    artwork_format: jpg
+    audios:
+      - *testAudio3
+
+- &testAlbum3 !!models.Album
+    #id:       2
+    artist:   testArtist2
+    title:    testAlbum3
+    year:     2016
+    artwork_format: jpg
+    audios:
+      - *testAudio4
+      - *testAudio5
+      - *testAudio6
+    
+    
+    

@@ -1,0 +1,22 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index()
+
+#GET		/upload						controllers.Application.uploadPage()
+#POST	/upload						controllers.Application.upload()
+#POST	/uploadAjax					controllers.Application.uploadAjax()
+
+GET		/audio/:audio_id			controllers.AudioFileManager.get(audio_id)
+GET		/audio/:artist/:album/:title	controllers.AudioFileManager.getOfName(artist:String, album:String, title:String)
+
+POST	/audio						controllers.AudioFileManager.upload()
+
+GET		/list						controllers.AudioQuery.get(artist:String?=null, album:String?=null, title:String?=null)
+
+GET		/artwork/*file				controllers.Assets.at(path="/tmp/artwork", file)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
