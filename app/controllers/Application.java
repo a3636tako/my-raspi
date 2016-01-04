@@ -21,7 +21,7 @@ import views.html.*;
 public class Application extends Controller {
 
 	public Result index() {
-		return ok(index.render("music sync", "Your new application is ready."));
+		return ok(index.render("音楽ファイルの追加", "音楽ファイルの追加"));
 	}
 
 	public Result uploadPage() {

@@ -19,7 +19,7 @@ public class Audio extends Model{
 	
 	public String title;
 	
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.EAGER)
 	@JoinColumn(name="album_id")
 	@JsonBackReference
 	public Album album;
@@ -37,9 +37,10 @@ public class Audio extends Model{
 		this.trackNumber = trackNumber;
 	}
 
+	@Transient
 	public File createFile(String format){
 		String path = Play.application().configuration().getString("audio.directory");
-		return Paths.get(path, album.artist, album.title, String.format("%02d-%s.%s", trackNumber, title , format)).toFile();
+		return new File(String.format("%s/%s/%s/%02d-%s.%s", path, album.artist, album.title,trackNumber, title , format));
 	}
 	
 	public static List<Audio> find(String artist, String album, String title){

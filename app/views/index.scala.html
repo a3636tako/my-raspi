@@ -8,7 +8,7 @@
     </head>
     <body>
         <h1>@message</h1>
-		@helper.form(action = routes.AudioFileManager.upload(), 'enctype -> "multipart/form-data") {
+		@helper.form(action = routes.AudioFileManager.uploadForm(), 'enctype -> "multipart/form-data") {
 			<input type="file" name="music">
 			<p>
 				<input type="submit">

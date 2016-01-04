@@ -43,6 +43,7 @@ public class Album extends Model{
 	
 	public static List<Album> find(String artist, String album, String title){
 		if(artist == null && album == null && title == null){
+			System.out.println("find all");
 			return find.all();
 		}else{
 			ExpressionList<Album> exp = find.fetch("audios").where();

@@ -3,6 +3,7 @@ package controllers;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -34,7 +35,11 @@ public class AudioFileManager extends Controller {
 			if (a == null) {
 				return notFound();
 			}
+			a.album = Album.find.byId(a.album.album_id);
+			
 			File f = a.createFile(ext);
+
+			System.out.println(f.toString());
 			if (!f.exists()) {
 				return notFound();
 			}
@@ -70,7 +75,7 @@ public class AudioFileManager extends Controller {
 		return ok(f);
 	}
 
-	@Transactional
+	
 	public Result upload() {
 		File file = request().body().asRaw().asFile();
 		File nf = new File(file.getAbsolutePath() + ".mp3");
@@ -85,7 +90,7 @@ public class AudioFileManager extends Controller {
 		return ok();
 	}
 
-	@Transactional
+	
 	public Result uploadForm() {
 		play.mvc.Http.MultipartFormData body = request().body().asMultipartFormData();
 		play.mvc.Http.MultipartFormData.FilePart music = body.getFile("music");
@@ -113,11 +118,20 @@ public class AudioFileManager extends Controller {
 		Tag tag = af.getTag();
 
 		String title = tag.getFirst(FieldKey.TITLE);
-		Integer trackNumber = Integer.valueOf(tag.getFirst(FieldKey.TRACK));
-
+		Integer trackNumber = null;
+		try{
+			trackNumber = Integer.valueOf(tag.getFirst(FieldKey.TRACK));
+		}catch(NumberFormatException e){
+			trackNumber = 1;
+		}
 		String albumTitle = tag.getFirst(FieldKey.ALBUM);
 		String artist = tag.getFirst(FieldKey.ALBUM_ARTIST);
-		Integer year = Integer.valueOf(tag.getFirst(FieldKey.YEAR));
+		Integer year = null;
+		try{
+			year = Integer.valueOf(tag.getFirst(FieldKey.YEAR));
+		}catch(NumberFormatException e){
+			year = 0;
+		}
 
 		List<Audio> audioList = Audio.find(artist, albumTitle, title);
 
@@ -138,10 +152,16 @@ public class AudioFileManager extends Controller {
 			audio.album = new Album();
 			audio.album.artist = artist;
 			audio.album.artwork_format = "mp3";
+			audio.album.audios = new ArrayList<>();
 			audio.album.audios.add(audio);
 			audio.album.title = albumTitle;
 			audio.album.year = year;
 		}
+		audio.album.save();
 		audio.save();
+		File saveFile = audio.createFile("mp3");
+		saveFile.getParentFile().mkdirs();
+		file.renameTo(saveFile);
+		System.out.println("Audio ID :" + audio.audio_id);
 	}
 }
